@@ -37,13 +37,13 @@ post '/quotes' do
     return [status,format_response(quote, request.accept)]
 end
 
-put '/quote/:id' do
+put '/quotes/:id' do
     payload = JSON.parse(request.body.read)
     return [400, "Missing poster"] unless payload["poster"]
     return [400, "Missing sources"] unless payload["sources"]
     return [400, "Missing text"] unless payload["text"]
-    valid = Quote.is_valid_quote?(payload["poster"], payload["sources"], payload["text"])
-    user ||= Quote.first(id: params[:id]) || halt(404)
+    valid = Quote.is_valid_quote?(payload["poster"], payload["text"])
+    quote ||= Quote.first(id: params[:id]) || halt(404)
     halt 500 unless quote.update(
         poster: payload["poster"],
         sources: payload["sources"],
@@ -52,7 +52,7 @@ put '/quote/:id' do
     return [status,format_response(quote, request.accept)]
 end
 
-delete '/quote/:id' do
-    quote ||= quote.get(params[:id]) || halt(404)
+delete '/quotes/:id' do
+    quote ||= Quote.first(id: params[:id]) || halt(404)
     halt 500 unless quote.destroy
 end
