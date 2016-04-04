@@ -33,6 +33,7 @@ class Quote
         url = Quote.groot_path + 'users/' + user
         uri = URI(url)
         resp = Net::HTTP.get_response(uri)
+        p resp.code
         if resp.code == '200'
             return true
         else

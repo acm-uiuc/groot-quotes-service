@@ -43,6 +43,10 @@ put '/quotes/:id' do
     return [400, "Missing sources"] unless payload["sources"]
     return [400, "Missing text"] unless payload["text"]
     valid = Quote.is_valid_quote?(payload["poster"], payload["text"])
+    if valid != 0
+        status = 403
+        return
+    end
     quote ||= Quote.first(id: params[:id]) || halt(404)
     halt 500 unless quote.update(
         poster: payload["poster"],
