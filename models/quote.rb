@@ -6,7 +6,7 @@ class Quote
     property :id, Serial
     property :text, String, required: true
     property :date, DateTime
-    property :sources, PgArray
+    property :sources, String
     property :poster, String, required: true, length: 1...9
 
     def self.groot_path=(path)

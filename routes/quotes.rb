@@ -24,6 +24,7 @@ post '/quotes' do
     puts valid
     quote = nil
     if valid == 0
+        p payload["sources"]
         quote = (Quote.create(
                 poster: payload["poster"],
                 sources: payload["sources"],

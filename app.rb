@@ -5,13 +5,13 @@ require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'data_mapper'
 require 'dm-migrations'
+require 'dm-serializer'
 require "dm_noisy_failures"
 require 'dm-core'
 require 'dm-timestamps'
 require 'dm-validations'
 require 'better_errors'
-require 'dm-postgres-types'
-require 'dm-postgres-adapter'
+require 'dm-mysql-adapter'
 require 'net/http'
 require 'uri'
 
@@ -22,7 +22,7 @@ configure :development do
     DataMapper::Logger.new($stdout, :debug)
     DataMapper.setup(
         :default,
-        'postgres://localhost/groot_quotes_service'
+        'mysql://localhost/groot_quotes_service'
     )
     use BetterErrors::Middleware
     # you need to set the application root in order to abbreviate filenames
@@ -36,8 +36,9 @@ configure :production do
     set :port, 9494
     DataMapper.setup(
         :default,
-        'postgres://localhost/groot_quotes_service'
+        'mysql://localhost/groot_quotes_service'
     )
+    DataMapper.finalize
 end
 
 require_relative './models/init'
