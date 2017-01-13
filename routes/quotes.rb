@@ -9,63 +9,80 @@
 # encoding: UTF-8
 require_relative '../models/quote'
 
-get '/' do
-    "This is the groot quotes service"
+before do
+    # halt(401, Errors::VERIFY_GROOT) unless Auth.verify_session(env)
+end
+
+get '/status' do
+    ResponseFormat.message("OK")
 end
 
 get '/quotes' do
-    format_response(Quote.all(order: [ :date.desc ]), request.accept)
+    ResponseFormat.data(Quote.all(order: [ :created_at.desc ], approved: params[:approved] || false))
 end
 
-get '/quotes/:id' do
-    quote ||= Quote.first(id: params[:id]) || halt(404)
-    puts quote.inspect
-    format_response(quote, request.accept)
+get '/quotes/:quote_id' do
+    status, error = Quote.validate(params, [:quote_id])
+    halt(status, ResponseFormat.error(error)) if error
+    
+    quote = Quote.get(params[:quote_id]) || halt(404, Errors::QUOTE_NOT_FOUND)
+
+    ResponseFormat.data(quote)
+end
+
+put '/quotes/:quote_id/vote' do
+    # attempt to find vote, should not exist already
+    quote_id = params[:quote_id]
+    params = ResponseFormat.get_params(request.body.read)
+    status, error = Quote.validate(params, [:netid])
+    halt(status, ResponseFormat.error(error)) if error
+
+    vote = Vote.first(quote_id: quote_id, netid: params[:netid])
+
+    halt(400, Errors::DUPLICATE_VOTE) if vote
+
+    quote = Quote.get(quote_id) || halt(404, Errors::QUOTE_NOT_FOUND)
+
+    quote.votes.create(
+        netid: params[:netid]
+    )
+
+    ResponseFormat.message("Vote cast!")
+end
+
+delete '/quote/:quote_id/vote' do
+    quote_id = params[:quote_id]
+    params = ResponseFormat.get_params(request.body.read)
+    status, error = Quote.validate(params, [:netid])
+    halt(status, ResponseFormat.error(error)) if error
+
+    vote = Vote.first(quote_id: quote_id, netid: params[:netid]) || halt(404, Errors::VOTE_NOT_FOUND)
+
+    halt(500) unless vote.destroy
+
+    ResponseFormat.message("Vote destroyed!")
 end
 
 post '/quotes' do
-    payload = JSON.parse(request.body.read)
-    return [400, "Missing poster"] unless payload["poster"]
-    return [400, "Missing source"] unless payload["sources"]
-    return [400, "Missing text"] unless payload["text"]
-    valid = Quote.is_valid_quote?(payload["poster"], payload["text"])
-    puts valid
-    quote = nil
-    if valid == 0
-        p payload["sources"]
-        quote = (Quote.create(
-                poster: payload["poster"],
-                sources: payload["sources"],
-                text: payload["text"],
-                date: Time.now.getutc
-            ))
-        puts quote.inspect
-    end
-    status = valid == 0 ? 201 : 403
-    puts status
-    return [status,format_response(quote, request.accept)]
-end
+    params = ResponseFormat.get_params(request.body.read)
+    status, error = Quote.validate(params, [:author, :source, :text])
+    halt status, ResponseFormat.error(error) if error
 
-put '/quotes/:id' do
-    payload = JSON.parse(request.body.read)
-    return [400, "Missing poster"] unless payload["poster"]
-    return [400, "Missing sources"] unless payload["sources"]
-    return [400, "Missing text"] unless payload["text"]
-    valid = Quote.is_valid_quote?(payload["poster"], payload["text"])
-    if valid != 0
-        status = 403
-        return
-    end
-    quote ||= Quote.first(id: params[:id]) || halt(404)
-    halt 500 unless quote.update(
-        poster: payload["poster"],
-        sources: payload["sources"],
-        text: payload["text"],
+    quote = Quote.first(text: params[:text])
+    return [400, Errors::DUPLICATE_QUOTE] if quote
+    
+    quote = Quote.create(
+        author: params[:author],
+        sources: params[:source],
+        text: params[:text]
     )
-    return [status,format_response(quote, request.accept)]
+
+    return ResponseFormat.message("Quote uploaded successfully.")
 end
 
 delete '/quotes/:id' do
+    halt(401, Errors::VERIFY_ADMIN) unless Auth.verify_admin(env)
+
     quote ||= Quote.first(id: params[:id]) || halt(404)
     halt 500 unless quote.destroy
 end

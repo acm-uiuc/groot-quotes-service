@@ -24,14 +24,11 @@ namespace :db do
     DataMapper.auto_upgrade!
   end
 
-  desc "Populate the database with dummy data by running scripts/applicants.rb"
+  desc "Populate the database with dummy data"
   task :seed do
     puts "Seeding database"
-    require './scripts/applicants.rb'
+    require './scripts/seed.rb'
   end
-
-  desc "Migrate and Seed database"
-  task :funky => [ "db:migrate", "db:seed" ]
 end
 
 

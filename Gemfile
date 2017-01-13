@@ -13,6 +13,7 @@ gem 'rake'
 
 gem 'sinatra'
 gem 'sinatra-contrib'
+gem "sinatra-cross_origin", "~> 0.3.1"
 gem 'foreigner'
 
 gem 'json'

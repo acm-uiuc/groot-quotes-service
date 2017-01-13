@@ -7,7 +7,10 @@
 # this license in a file with the distribution.
 # app.rb
 
-require_relative 'auth'
-require_relative 'errors'
-require_relative 'config'
-require_relative 'response_format'
+class Vote
+    include DataMapper::Resource
+
+    property :id, Serial
+    property :netid, String, required: true
+    belongs_to :quote, key: true
+end

@@ -5,47 +5,40 @@
 # The Groot Project is open source software, released under the University of
 # Illinois/NCSA Open Source License. You should have received a copy of
 # this license in a file with the distribution.
-# app.rb
-#models/quote
 
 class Quote
     include DataMapper::Resource
 
     property :id, Serial
-    property :text, String, required: true
-    property :date, DateTime
-    property :sources, String
-    property :poster, String, required: true, length: 1...9
+    property :text, String, required: true, unique: true
+    property :source, String, length: 1..9 # netid
+    property :author, String, required: true, length: 1...9 # netid
+    property :approvd, Boolean, default: false
 
-    def self.groot_path=(path)
-        @groot_path = path
-    end
-    def self.groot_path
-        @groot_path
+    property :created_at, DateTime
+
+    def self.validate(params, attributes)
+      attributes.each do |attr|
+        return [400, "Missing #{attr}"] unless params[attr] && !params[attr].empty?
+        case attr
+        when :text
+            return [400, "Invalid quote"] unless (params[attr] =~ /^\s*$/)
+        when :poster
+            return [400, "Invalid poster"] unless Auth.verify_user(params[attr])
+        when :source
+            return [400, "Invalid source"] unless Auth.verify_user(params[attr])
+        end
+      end
+
+      [200, nil]
     end
 
-    def self.is_valid_quote?(poster, text)
-        if !(text =~ /^\s*$/).nil?
-            return -1
-        end
-        if !verify_user(poster)
-            return -2
-        end
-        return 0
-    end
-
-    def self.verify_user(user)
-        if user.nil?
-            return false
-        end
-        url = Quote.groot_path + 'users/' + user
-        uri = URI(url)
-        resp = Net::HTTP.get_response(uri)
-        p resp.code
-        if resp.code == '200'
-            return true
-        else
-            return false
-        end
+    def serialize
+        {
+            id: self.id,
+            text: self.text,
+            author: self.author,
+            source: self.source
+        }
     end
 end
