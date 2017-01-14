@@ -13,7 +13,6 @@ module Config
     end
 
     def self.load_db(section)
-      binding.pry
       config = YAML.load_file(__dir__ + "/../config/database.yaml")
       config[section]
     end

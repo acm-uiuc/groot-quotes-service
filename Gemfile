@@ -44,4 +44,5 @@ group :development, :test do
   gem 'shotgun' # Auto-reload sinatra app on change.
   gem 'better_errors' # Show an awesome console in the browser on error.
   gem 'rest-client'
+  gem 'binding_of_caller'
 end

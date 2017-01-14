@@ -26,6 +26,7 @@ namespace :db do
 
   desc "Populate the database with dummy data"
   task :seed do
+    DataMapper.auto_migrate!
     puts "Seeding database"
     require './scripts/seed.rb'
   end

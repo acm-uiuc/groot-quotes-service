@@ -10,12 +10,13 @@ class Quote
     include DataMapper::Resource
 
     property :id, Serial
-    property :text, String, required: true, unique: true
+    property :text, Text, required: true, unique: true
     property :source, String, length: 1..9 # netid
     property :author, String, required: true, length: 1...9 # netid
-    property :approvd, Boolean, default: false
+    property :approved, Boolean, default: false
 
     property :created_at, DateTime
+    has n, :votes
 
     def self.validate(params, attributes)
       attributes.each do |attr|
@@ -33,12 +34,18 @@ class Quote
       [200, nil]
     end
 
+    def set_user_voted(netid)
+        @user_voted = !Vote.first(quote_id: self.id, netid: netid).nil?
+    end
+
     def serialize
         {
             id: self.id,
             text: self.text,
             author: self.author,
-            source: self.source
+            source: self.source,
+            votes: self.votes.count,
+            upvoted: @user_voted
         }
     end
 end

@@ -4,16 +4,15 @@ require_relative '../helpers/init'
 
 100.times do
   Quote.create(
-    text: Faker::Lorem.sentence(rand(2..10)).chomp('.'),
-    netid: Faker::Internet.user_name(6..7),
-    source: Faker::Internet.user_name(6..7)
+    text: Faker::Lorem.unique.sentence(1),
+    author: Faker::Internet.user_name(6..7),
+    source: Faker::Internet.user_name(6..7),
+    approved: [true, false].sample
   )
 end
 
-# 100.times do
-#   Vote.create(
-#     text: Faker::Lorem.sentence(rand(2..10)).chomp('.'),
-#     netid: Faker::Internet.user_name(6..7),
-#     source: Faker::Internet.user_name(6..7)
-#   )
-# end
+1000.times do
+  Quote.get(rand(1..100)).votes.create(
+    netid: Faker::Internet.user_name(6..7),
+  )
+end
