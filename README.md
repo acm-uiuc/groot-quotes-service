@@ -23,7 +23,7 @@ You need to login to `mysql`, and create the database names for your development
 
 In `mysql`:
 ```
-CREATE DATABASE groot_recruiter_service
+CREATE DATABASE groot_quote_service_dev
 ```
 
 ## Run Application
@@ -31,24 +31,28 @@ CREATE DATABASE groot_recruiter_service
 ruby app.rb
 ```
 
-## Routes
+## Routes (from `rake routes:show`)
 
 :: GET ::
 /quotes
-/quotes/:quote_id
+/quotes/:id
+/status
+
+:: HEAD ::
+/quotes
+/quotes/:id
 /status
 
 :: POST ::
 /quotes
-/quotes/:quote_id/vote
+/quotes/:id/vote
 
 :: DELETE ::
 /quotes/:id
-/quotes/:quote_id/vote
+/quotes/:id/vote
 
 :: PUT ::
 /quotes/:id/approve
-
 
 ## License
 

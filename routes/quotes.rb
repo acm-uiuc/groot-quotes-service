@@ -9,9 +9,18 @@
 # encoding: UTF-8
 require_relative '../models/quote'
 
+def set_user_voted(quotes)
+    quotes.map do |quote|
+        quote.set_user_voted(@netid)
+    end
+
+    quotes
+end
+
 before do
     halt(401, Errors::VERIFY_GROOT) unless Auth.verify_session(env)
     @netid = env["HTTP_NETID"]
+    halt(400, ResponseFormat.error("No netid provided")) unless @netid
 end
 
 get '/status' do
@@ -20,29 +29,26 @@ end
 
 get '/quotes' do
     quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
-    quotes.map do |quote|
-        quote.set_user_voted(@netid)
-    end
-
-    ResponseFormat.data(quotes)
+    ResponseFormat.data(set_user_voted(quotes))
 end
 
-get '/quotes/:quote_id' do
-    status, error = Quote.validate(params, [:quote_id])
+get '/quotes/:id' do
+    status, error = Quote.validate(params, [:id])
     halt(status, ResponseFormat.error(error)) if error
     
-    quote = Quote.get(params[:quote_id]) || halt(404, Errors::QUOTE_NOT_FOUND)
+    quote = Quote.get(params[:id]) || halt(404, Errors::QUOTE_NOT_FOUND)
+    quote.set_user_voted(@netid)
     ResponseFormat.data(quote)
 end
 
-post '/quotes/:quote_id/vote' do
-    quote_id = params[:quote_id]
+post '/quotes/:id/vote' do
+    id = params[:id]
     params = ResponseFormat.get_params(request.body.read)
     
-    vote = Vote.first(quote_id: quote_id, netid: @netid)
+    vote = Vote.first(id: id, netid: @netid)
     halt(400, Errors::DUPLICATE_VOTE) if vote
 
-    quote = Quote.get(quote_id) || halt(404, Errors::QUOTE_NOT_FOUND)
+    quote = Quote.get(id) || halt(404, Errors::QUOTE_NOT_FOUND)
     quote.votes.create(
         netid: @netid
     )
@@ -50,10 +56,8 @@ post '/quotes/:quote_id/vote' do
     ResponseFormat.message("Vote cast!")
 end
 
-delete '/quotes/:quote_id/vote' do
-    quote_id = params[:quote_id]
-    
-    vote = Vote.first(quote_id: quote_id, netid: @netid) || halt(404, Errors::VOTE_NOT_FOUND)
+delete '/quotes/:id/vote' do
+    vote = Vote.first(quote_id: params[:id], netid: @netid) || halt(404, Errors::VOTE_NOT_FOUND)
     halt 500 unless vote.destroy
 
     ResponseFormat.message("Vote destroyed!")
@@ -85,11 +89,7 @@ put '/quotes/:id/approve' do
     quote.update(approved: true) || halt(500)
 
     quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
-    quotes.map do |quote|
-        quote.set_user_voted(@netid)
-    end
-
-    ResponseFormat.data(quotes)    
+    ResponseFormat.data(set_user_voted(quotes))
 end
 
 delete '/quotes/:id' do
@@ -99,8 +99,5 @@ delete '/quotes/:id' do
     halt 500 unless quote.destroy
 
     quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
-    quotes.map do |quote|
-        quote.set_user_voted(@netid)
-    end
-    ResponseFormat.data(quotes)
+    ResponseFormat.data(set_user_voted(quotes))
 end

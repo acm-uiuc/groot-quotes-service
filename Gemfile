@@ -36,7 +36,6 @@ group :test do
   gem 'faker'
   gem 'shoulda'
   gem 'database_cleaner'
-  gem 'json_spec'
   gem 'webmock'
 end
 
