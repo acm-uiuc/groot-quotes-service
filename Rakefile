@@ -59,3 +59,23 @@ desc 'Start Pry with application environment loaded'
 task :pry  do
     exec "pry -r./init.rb"
 end
+
+namespace :routes do
+    desc 'Print all the routes'
+    task :show do
+        Sinatra::Application.routes.each_pair do |method, list|
+            puts ":: #{method} ::"
+            routes = []
+            list.each do |item|
+                source = item[0].source
+                item[1].each do |s|
+                    source.sub!(/\(.+?\)/, ':'+s)
+                end
+                routes << source[2...-2]
+            end
+            puts routes.sort.join("\n")
+            puts "\n"
+        end
+    end
+end
+

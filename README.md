@@ -1,38 +1,54 @@
-#Groot Quotes Service
+# Groot Quotes Service
 
-##Model
-```ruby
-
-class Quote
-    include DataMapper::Resource
-
-    property :id, Serial
-    property :text, String, required: true
-    property :date, DateTime
-    property :sources, PgArray
-    property :poster, String, required: true, length: 1...9
-
-end
+## Installing MySQL
+```sh
+brew install mysql
 ```
 
-##Installing PostgreSQL
-```sh
-[package-manager] install postgres
-
-initdb /usr/local/var/postgres
-pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
-ps auxwww | grep postgres
-createdb groot_quotes_service
+## Migrate DB after model alteration (clears all data)
 ```
-##Run Application
-```sh
-ruby ./app.rb
-```
-
-##Migrate DB after model alteration
-```sh
 rake db:migrate
 ```
+
+## Create secrets.yaml and database.yaml
+
+```
+cp secrets.yaml.template secrets.yaml
+cp database.yaml.template database.yaml
+```
+
+## Create databases
+
+You need to login to `mysql`, and create the database names for your development and test environments and fill it in the `database.yaml`. For example,
+
+In `mysql`:
+```
+CREATE DATABASE groot_recruiter_service
+```
+
+## Run Application
+```
+ruby app.rb
+```
+
+## Routes
+
+:: GET ::
+/quotes
+/quotes/:quote_id
+/status
+
+:: POST ::
+/quotes
+/quotes/:quote_id/vote
+
+:: DELETE ::
+/quotes/:id
+/quotes/:quote_id/vote
+
+:: PUT ::
+/quotes/:id/approve
+
 
 ## License
 
