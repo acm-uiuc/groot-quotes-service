@@ -52,12 +52,15 @@ module Auth
   end
 
   def self.verify_user(netid)
-    url = "#{SERVICES_URL}/users/#{netid}"
-    http = Net::HTTP.new(uri.host, uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    request['Authorization'] = groot_access_key
+    groot_access_key = Config.load_config("groot")["access_key"]
     
+    uri = URI.parse("#{SERVICES_URL}/users/#{netid}")
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request.body = {}.to_json
+    request['Authorization'] = groot_access_key
     response = http.request(request)
+    
     return response.code == "200"
   end
 

@@ -16,19 +16,18 @@ class Quote
     property :approved, Boolean, default: false
 
     property :created_at, DateTime
-    has n, :votes
+    has n, :votes, constraint: :destroy
 
     def self.validate(params, attributes)
       attributes.each do |attr|
         return [400, "Missing #{attr}"] unless params[attr] && !params[attr].empty?
-        case attr
-        when :text
-            return [400, "Invalid quote"] unless (params[attr] =~ /^\s*$/)
-        when :poster
-            return [400, "Invalid poster"] unless Auth.verify_user(params[attr])
-        when :source
-            return [400, "Invalid source"] unless Auth.verify_user(params[attr])
-        end
+        # Since we cannot verify that a netid was valid, this doesn't work'
+        # case attr
+        # when :author
+        #     return [400, "Invalid poster"] unless Auth.verify_user(params[attr])
+        # when :source
+        #     return [400, "Invalid source"] unless Auth.verify_user(params[attr])
+        # end
       end
 
       [200, nil]
@@ -45,6 +44,7 @@ class Quote
             author: self.author,
             source: self.source,
             votes: self.votes.count,
+            approved: self.approved,
             upvoted: @user_voted
         }
     end

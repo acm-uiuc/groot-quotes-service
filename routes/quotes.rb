@@ -19,7 +19,7 @@ get '/status' do
 end
 
 get '/quotes' do
-    quotes = Quote.all(order: [ :created_at.desc ], approved: params[:approved] || true)
+    quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
     quotes.map do |quote|
         quote.set_user_voted(@netid)
     end
@@ -35,31 +35,25 @@ get '/quotes/:quote_id' do
     ResponseFormat.data(quote)
 end
 
-put '/quotes/:quote_id/vote' do
+post '/quotes/:quote_id/vote' do
     quote_id = params[:quote_id]
     params = ResponseFormat.get_params(request.body.read)
-    status, error = Quote.validate(params, [:netid])
-    halt(status, ResponseFormat.error(error)) if error
-
-    vote = Vote.first(quote_id: quote_id, netid: params[:netid])
+    
+    vote = Vote.first(quote_id: quote_id, netid: @netid)
     halt(400, Errors::DUPLICATE_VOTE) if vote
 
     quote = Quote.get(quote_id) || halt(404, Errors::QUOTE_NOT_FOUND)
     quote.votes.create(
-        netid: params[:netid]
+        netid: @netid
     )
 
     ResponseFormat.message("Vote cast!")
 end
 
-delete '/quote/:quote_id/vote' do
+delete '/quotes/:quote_id/vote' do
     quote_id = params[:quote_id]
-    params = ResponseFormat.get_params(request.body.read)
-    status, error = Quote.validate(params, [:netid])
-    halt(status, ResponseFormat.error(error)) if error
-
-    vote = Vote.first(quote_id: quote_id, netid: params[:netid]) || halt(404, Errors::VOTE_NOT_FOUND)
-
+    
+    vote = Vote.first(quote_id: quote_id, netid: @netid) || halt(404, Errors::VOTE_NOT_FOUND)
     halt 500 unless vote.destroy
 
     ResponseFormat.message("Vote destroyed!")
@@ -67,24 +61,46 @@ end
 
 post '/quotes' do
     params = ResponseFormat.get_params(request.body.read)
+    
     status, error = Quote.validate(params, [:author, :source, :text])
     halt status, ResponseFormat.error(error) if error
 
     quote = Quote.first(text: params[:text])
-    halt(400, Errors::DUPLICATE_QUOTE) if quote
-    
+    halt 400, Errors::DUPLICATE_QUOTE if quote
+
     quote = Quote.create(
         author: params[:author],
-        sources: params[:source],
-        text: params[:text]
+        source: params[:source],
+        text: params[:text]  
     )
 
-    return ResponseFormat.message("Quote uploaded successfully.")
+    ResponseFormat.message("Quote uploaded successfully.")
+end
+
+put '/quotes/:id/approve' do
+    halt(401, Errors::VERIFY_ADMIN) unless Auth.verify_admin(env)
+    quote = Quote.get(params[:id]) || halt(404, Errors::QUOTE_NOT_FOUND)
+    
+    halt 400, Errors::QUOTE_APPROVED if quote.approved
+    quote.update(approved: true) || halt(500)
+
+    quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
+    quotes.map do |quote|
+        quote.set_user_voted(@netid)
+    end
+
+    ResponseFormat.data(quotes)    
 end
 
 delete '/quotes/:id' do
     halt(401, Errors::VERIFY_ADMIN) unless Auth.verify_admin(env)
 
-    quote ||= Quote.first(id: params[:id]) || halt(404, Errors::QUOTE_NOT_FOUND)
+    quote = Quote.get(params[:id]) || halt(404, Errors::QUOTE_NOT_FOUND)
     halt 500 unless quote.destroy
+
+    quotes = Quote.all(order: [ :approved.asc, :created_at.desc ])
+    quotes.map do |quote|
+        quote.set_user_voted(@netid)
+    end
+    ResponseFormat.data(quotes)
 end

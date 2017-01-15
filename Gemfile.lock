@@ -221,6 +221,7 @@ DEPENDENCIES
   codeclimate-test-reporter
   data_mapper
   database_cleaner
+  dm-constraints
   dm-core
   dm-migrations
   dm-mysql-adapter

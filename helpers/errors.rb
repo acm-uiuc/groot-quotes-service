@@ -8,4 +8,6 @@ module Errors
   DUPLICATE_VOTE = ResponseFormat.error "Vote already cast"
   QUOTE_NOT_FOUND = ResponseFormat.error "Quote not found"
   VOTE_NOT_FOUND = ResponseFormat.error "Vote not found"
+
+  QUOTE_APPROVED = ResponseFormat.error "Quote already approved"
 end
