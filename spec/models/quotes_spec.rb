@@ -163,7 +163,26 @@ RSpec.describe Sinatra::Application do
   end
 
   describe 'POST /quotes' do
+    let!(:valid_params) {
+      {
+        text: quote,
+        author: author,
+        source: source
+      }
+    }
 
+    [:text, :author, :source].each do |attr|
+      context "when missing #{attr}" do
+        it 'should return an error' do
+          valid_params.delete(attr)
+
+          post '/quotes', valid_params.to_json, {"HTTP_NETID" => user_netid}
+          expect(last_response).not_to be_ok
+          json_response = JSON.parse(last_response.body)
+          expect(json_response['error']).to eq "Missing #{attr}"
+        end
+      end
+    end
   end
 
   describe 'PUT /quotes/:id/approve' do

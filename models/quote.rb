@@ -45,6 +45,7 @@ class Quote
             source: self.source,
             votes: self.votes.count,
             approved: self.approved,
+            created_at: self.created_at.strftime('%x %r'),
             upvoted: @user_voted
         }
     end
