@@ -1,2 +1,3 @@
 config/secrets.yaml
 config/database.yaml
+scripts/data.csv

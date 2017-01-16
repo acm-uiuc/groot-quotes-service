@@ -11,8 +11,8 @@ class Quote
 
     property :id, Serial
     property :text, Text, required: true, unique: true
-    property :source, String, length: 1..9 # netid
-    property :author, String, required: true, length: 1...9 # netid
+    property :source, String # netid
+    property :author, String, required: true # netid
     property :approved, Boolean, default: false
 
     property :created_at, DateTime

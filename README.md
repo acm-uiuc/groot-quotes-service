@@ -54,6 +54,10 @@ ruby app.rb
 :: PUT ::
 /quotes/:id/approve
 
+## Data Migration
+
+Run `rake db:liquid` to migrate a table dump of previous quotes in csv format. An example can be seen under `scripts/data.csv.template`.
+
 ## License
 
 This project is licensed under the University of Illinois/NCSA Open Source License. For a full copy of this license take a look at the LICENSE file. 
