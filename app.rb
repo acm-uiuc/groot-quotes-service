@@ -10,6 +10,7 @@
 require 'json'
 require 'sinatra'
 require 'sinatra/reloader' if development?
+require 'sinatra/cross_origin'
 require 'data_mapper'
 require 'dm-migrations'
 require 'dm-serializer'
@@ -21,15 +22,26 @@ require 'better_errors'
 require 'dm-mysql-adapter'
 require 'net/http'
 require 'uri'
+require 'oga'
 
-set :root, File.dirname(__FILE__)
-set :GROOT_URL, 'http://localhost:8000/'
+require_relative './models/init'
+require_relative './routes/init'
+require_relative './helpers/init'
+
+register Sinatra::CrossOrigin
+
+configure do
+    enable :cross_origin
+end
+
+set :root, File.expand_path('..', __FILE__)
 set :port, 9494
 configure :development do
+    db = Config.load_db("development")    
     DataMapper::Logger.new($stdout, :debug)
     DataMapper.setup(
         :default,
-        'mysql://localhost/groot_quotes_service'
+        "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]
     )
     use BetterErrors::Middleware
     # you need to set the application root in order to abbreviate filenames
@@ -38,19 +50,13 @@ configure :development do
     DataMapper.auto_upgrade!
 end
 
-
 configure :production do
-    set :port, 9494
+    db = Config.load_db("production")
     DataMapper.setup(
         :default,
-        'mysql://localhost/groot_quotes_service'
+        "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]
     )
     DataMapper.finalize
 end
-
-require_relative './models/init'
-Quote.groot_path = settings.GROOT_URL
-require_relative './routes/init'
-require_relative './helpers/init'
 
 DataMapper.finalize

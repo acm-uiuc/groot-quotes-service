@@ -24,40 +24,43 @@ namespace :db do
     DataMapper.auto_upgrade!
   end
 
-  desc "Populate the database with dummy data by running scripts/applicants.rb"
+  desc "Populate the database with dummy data"
   task :seed do
+    DataMapper.auto_migrate!
     puts "Seeding database"
-    require './scripts/applicants.rb'
+    require './scripts/seed.rb'
   end
 
-  desc "Migrate and Seed database"
-  task :funky => [ "db:migrate", "db:seed" ]
-end
-
-
-namespace :generate do
-
-  desc "Add new spec file"
-  task :spec do
-    unless ENV.has_key?('NAME')
-      raise "Must specify spec file name, e.g., rake generate:spec NAME=craftsman_profile"
+  desc "Load the database with data from liquid"
+    task :liquid do
+        
+        # Delete data and load from schema
+        DataMapper.auto_migrate!
+        require './scripts/liquid.rb'
     end
-
-    spec_path = "spec/" + ENV['NAME'].downcase + "_spec.rb"
-
-    if File.exist?(spec_path)
-      raise "ERROR: Spec file '#{spec_path}' already exists."
-    end
-
-    puts "Creating #{spec_path}"
-    File.open(spec_path, 'w+') do |f|
-      f.write("require 'spec_helper'")
-    end
-  end
-
 end
 
 desc 'Start Pry with application environment loaded'
 task :pry  do
     exec "pry -r./init.rb"
 end
+
+namespace :routes do
+    desc 'Print all the routes'
+    task :show do
+        Sinatra::Application.routes.each_pair do |method, list|
+            puts ":: #{method} ::"
+            routes = []
+            list.each do |item|
+                source = item[0].source
+                item[1].each do |s|
+                    source.sub!(/\(.+?\)/, ':'+s)
+                end
+                routes << source[2...-2]
+            end
+            puts routes.sort.join("\n")
+            puts "\n"
+        end
+    end
+end
+

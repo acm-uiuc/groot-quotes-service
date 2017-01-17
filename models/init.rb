@@ -6,4 +6,6 @@
 # Illinois/NCSA Open Source License. You should have received a copy of
 # this license in a file with the distribution.
 # app.rb
+
 require_relative './quote'
+require_relative './vote'
