@@ -9,8 +9,9 @@ CSV.foreach(Dir.pwd + FILE_PATH, headers: true) do |row|
   next unless quote_text && quote_source
   next unless Quote.first(text: quote_text).nil?
 
-  author = quote_author.gsub(",", "").empty? ? quote_source[1..-2] : quote_author.gsub(",", "")
-
+  next unless quote_author && quote_source && !quote_author.empty? && !quote_source.empty?
+  author = (quote_author.gsub(",", "").empty?) ? quote_source[1..2] : quote_author.gsub(",", "")
+  
   Quote.create(
     text: quote_text,
     source: quote_source[1..-2],
