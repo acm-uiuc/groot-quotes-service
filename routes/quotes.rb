@@ -18,7 +18,7 @@ def set_user_voted(quotes)
 end
 
 before do
-    halt(401, Errors::VERIFY_GROOT) unless Auth.verify_session(env)
+    halt(401, Errors::VERIFY_GROOT) unless Auth.verify_session(env) || settings.unsecure
     @netid = env["HTTP_NETID"]
     halt(400, ResponseFormat.error("No netid provided")) unless @netid
 end
@@ -75,7 +75,7 @@ post '/quotes' do
     quote = Quote.create(
         author: params[:author],
         source: params[:source],
-        text: params[:text]  
+        text: params[:text].chomp('"').reverse.chomp('"').reverse
     )
 
     ResponseFormat.message("Quote uploaded successfully.")
