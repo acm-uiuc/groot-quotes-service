@@ -36,6 +36,7 @@ end
 
 set :root, File.expand_path('..', __FILE__)
 set :port, 9494
+set :bind, '0.0.0.0'
 configure :development do
     enable :unsecure
     
