@@ -40,7 +40,7 @@ set :bind, '0.0.0.0'
 configure :development do
     enable :unsecure
     
-    db = Config.load_db("development")    
+    db = Config.load_config("development")    
     DataMapper::Logger.new($stdout, :debug)
     DataMapper.setup(
         :default,
@@ -54,7 +54,7 @@ configure :development do
 end
 
 configure :production do
-    db = Config.load_db("production")
+    db = Config.load_config("production")
     DataMapper.setup(
         :default,
         "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]

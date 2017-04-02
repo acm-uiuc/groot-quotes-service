@@ -17,16 +17,15 @@ brew install mysql
 rake db:migrate
 ```
 
-## Create secrets.yaml and database.yaml
+## Create secrets.yaml
 
 ```
 cp secrets.yaml.template secrets.yaml
-cp database.yaml.template database.yaml
 ```
 
 ## Create databases
 
-You need to login to `mysql`, and create the database names for your development and test environments and fill it in the `database.yaml`. For example,
+You need to login to `mysql`, and create the database names for your development and test environments and fill it in `secrets.yaml`. For example,
 
 In `mysql`:
 ```

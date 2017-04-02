@@ -10,19 +10,25 @@ require 'uri'
 require 'pry'
 
 module Auth
-  SERVICES_URL = 'http://localhost:8000'
   VERIFY_COMMITTEE_URL = '/groups/committees/'
   VALIDATE_SESSION_URL = '/session/'
 
+  def self.services_url
+    Config.load_config("groot")["host"]
+  end
+
+  def self.groot_access_key
+    Config.load_config("groot")["access_key"]
+  end
+
   # Verifies that an admin (defined by groups service) originated this request
   def self.verify_credentials(type, request)
-    groot_access_key = Config.load_config("groot")["access_key"]
     netid = request['HTTP_NETID']
     
-    uri = URI.parse("#{SERVICES_URL}#{VERIFY_COMMITTEE_URL}#{type}?isMember=#{netid}")
+    uri = URI.parse("#{Auth.services_url}#{VERIFY_COMMITTEE_URL}#{type}?isMember=#{netid}")
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Get.new(uri.request_uri)
-    request['Authorization'] = groot_access_key
+    request['Authorization'] = Auth.groot_access_key
     
     response = http.request(request)
     return response.code == "200"
@@ -31,9 +37,8 @@ module Auth
   # Verifies that the session (validated by users service) is active
   def self.verify_session(request)
     session_token = request['HTTP_TOKEN']
-    groot_access_key = Config.load_config("groot")["access_key"]
     
-    uri = URI.parse("#{SERVICES_URL}#{VALIDATE_SESSION_URL}#{session_token}")
+    uri = URI.parse("#{Auth.services_url}#{VALIDATE_SESSION_URL}#{session_token}")
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
     request.body = {
@@ -42,7 +47,7 @@ module Auth
         name: 'remote_address'
       }]
     }.to_json
-    request['Authorization'] = groot_access_key
+    request['Authorization'] = Auth.groot_access_key
     request['Accept'] = 'application/json'
     request['Content-Type'] = 'application/json'
     response = http.request(request)
@@ -52,13 +57,11 @@ module Auth
   end
 
   def self.verify_user(netid)
-    groot_access_key = Config.load_config("groot")["access_key"]
-    
-    uri = URI.parse("#{SERVICES_URL}/users/#{netid}")
+    uri = URI.parse("#{Auth.services_url}/users/#{netid}")
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
     request.body = {}.to_json
-    request['Authorization'] = groot_access_key
+    request['Authorization'] = Auth.groot_access_key
     response = http.request(request)
     
     return response.code == "200"
