@@ -37,15 +37,17 @@ end
 set :root, File.expand_path('..', __FILE__)
 set :port, 9494
 set :bind, '0.0.0.0'
+
+db = Config.load_config("database")
+DataMapper.setup(
+    :default,
+    "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]
+)
+
 configure :development do
     enable :unsecure
     
-    db = Config.load_config("development_db")    
     DataMapper::Logger.new($stdout, :debug)
-    DataMapper.setup(
-        :default,
-        "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]
-    )
     use BetterErrors::Middleware
     # you need to set the application root in order to abbreviate filenames
     # within the application:
@@ -54,12 +56,7 @@ configure :development do
 end
 
 configure :production do
-    db = Config.load_config("production_db")
-    DataMapper.setup(
-        :default,
-        "mysql://" + db["user"] + ":" + db["password"] + "@" + db["hostname"]+ "/" + db["name"]
-    )
-    DataMapper.finalize
+    disable :unsecure
 end
 
 DataMapper.finalize
