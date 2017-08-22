@@ -1,0 +1,19 @@
+language: ruby
+
+rvm:
+  - 2.2
+
+services:
+  - mysql
+
+before_install:
+  - gem update bundler
+  - cp config/secrets.yaml.template config/secrets.yaml
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS groot_quote_service_test;'
+
+install:
+  - bundle install
+  - gem install rubocop
+  - rake db:migrate
+
+script: rubocop * && rspec

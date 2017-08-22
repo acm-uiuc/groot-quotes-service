@@ -1,5 +1,4 @@
-FILE_PATH = "/scripts/data.csv"
-puts "IMPORT LOCATION: #{FILE_PATH}"
+FILE_PATH = '/scripts/data.csv'.freeze
 
 CSV.foreach(Dir.pwd + FILE_PATH, headers: true) do |row|
   quote_text = Oga.parse_html(row['quote_text']).children.map(&:text).join
@@ -10,8 +9,8 @@ CSV.foreach(Dir.pwd + FILE_PATH, headers: true) do |row|
   next unless Quote.first(text: quote_text).nil?
 
   next unless quote_author && quote_source && !quote_author.empty? && !quote_source.empty?
-  author = (quote_author.gsub(",", "").empty?) ? quote_source[1..2] : quote_author.gsub(",", "")
-  
+  author = quote_author.delete(',').empty? ? quote_source[1..2] : quote_author.delete(',')
+
   Quote.create(
     text: quote_text,
     source: quote_source[1..-2],
