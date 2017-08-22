@@ -13,6 +13,6 @@ end
 
 1000.times do
   Quote.get(rand(1..100)).votes.create(
-    netid: Faker::Internet.user_name(6..7),
+    netid: Faker::Internet.user_name(6..7)
   )
 end
