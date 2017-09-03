@@ -40,6 +40,7 @@ set :bind, '0.0.0.0'
 
 configure :development do
   enable :unsecure
+  register Sinatra::Reloader
 
   db = Config.load_config('database')
   DataMapper.setup(:default, 'mysql://' + db['user'] + ':' + db['password'] + '@' + db['hostname'] + '/' + db['name'])
