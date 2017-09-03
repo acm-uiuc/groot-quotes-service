@@ -1,5 +1,4 @@
 # Groot Quotes Service
-Groot core development:
 
 [![Build Status](https://travis-ci.org/acm-uiuc/groot-quotes-service.svg?branch=master)](https://travis-ci.org/acm-uiuc/groot-quotes-service)
 
