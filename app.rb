@@ -38,11 +38,17 @@ set :root, File.expand_path('..', __FILE__)
 set :port, 9494
 set :bind, '0.0.0.0'
 
+configure :development, :production do
+  db = Config.load_config('database')
+  DataMapper.setup(
+    :default,
+    'mysql://' + db['user'] + ':' + db['password'] + '@' + db['hostname'] + '/' + db['name']
+  )
+end
+
 configure :development do
   enable :unsecure
-
-  db = Config.load_config('database')
-  DataMapper.setup(:default, 'mysql://' + db['user'] + ':' + db['password'] + '@' + db['hostname'] + '/' + db['name'])
+  register Sinatra::Reloader
 
   DataMapper::Logger.new($stdout, :debug)
   use BetterErrors::Middleware
