@@ -1,19 +1,17 @@
 language: ruby
-
 rvm:
-  - 2.2
-
+- 2.2
 services:
-  - mysql
-
+- mysql
 before_install:
-  - gem update bundler
-  - cp config/secrets.yaml.template config/secrets.yaml
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS groot_quote_service_test;'
-
+- gem update bundler
+- cp config/secrets.yaml.template config/secrets.yaml
+- mysql -e 'CREATE DATABASE IF NOT EXISTS groot_quote_service_test;'
 install:
-  - bundle install
-  - gem install rubocop
-  - rake db:migrate
-
+- bundle install
+- gem install rubocop
+- rake db:migrate
 script: rubocop * && rspec
+notifications:
+  slack:
+    secure: duROeik4Er+K/zv4TZ7AhyE0m8aYRVq1R/ObLC0vBp4W1tEZ3WgdoIqGWjEurseOmuoY9dVAQXFVRF25VSO7vJ4GvYIQdy2Qz6XBt+fTERaOIpD7kGXfbTa0o7hLPwOIfJxc2g0B+c881qLxdlM6gys/UoQaxMXAJeSqh3DlFeJOA2Gi4msH+M9N3DK4AMl5FtLKrTmle66No0Z3EIq/HIlfNeXzSL4FJrRdjHHTmbm7C0jS+jxhoGyHFh81Fds8UUzLkkchS0aaEesnLoXz1qoW6qf1HbeGToojTXWm5sm29chM8wkiYmKXCkjuBx8jWjc2m4/qGcPMR/resT2cDVUNFbJKlCFaWj3exx/MdisnkdqkQiYKR1r+YgA+eFvVdfRazRDVZoodI/eGRWW3+nJB8dCV3YGopPht+J6WZzYyuwRezJzHU4LFN7xq2teXK+sN15NgeI2E6zaEFHiAMSEvCjypVDLYuUgOhc4y5ByqGcE3ngrEaBwaifZD6gSq1Bxzi5qR3BKZM8MppmTSFZGa+lDa8T8cvpiRtv4RrCycAHBZKGHHslGnKgSitvl/iXwIwyeD/IAS2/p7MaX/PfYw2cwvP4SojdddH6PyPibGrfE9+aHlXGXTzwnFQeswsYytmCC2KR1nfLd1KKLlckqzWm5nSIbOmBGRV1tCYPs=
